@@ -1,6 +1,10 @@
 .formData{
-    background-color: white;
-    color: #820d17;
+    background-color: #0a0a0a;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-radius: 20px;
 }
 .formInputs{
     background-color: white;
@@ -9,4 +13,5 @@
 .formButton{
     background-color: #820d17;
     color: white;
+    margin-top: 20px;
 }

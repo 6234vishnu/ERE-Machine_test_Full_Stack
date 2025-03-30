@@ -1,4 +1,5 @@
-import React, { useState,useNavigate } from 'react'
+import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react'
 import api from '../../api/axiosInstance'
 import '../styles/loginPage.css'
 
@@ -18,7 +19,7 @@ function LoginPage() {
             return setMessage("password no matched try again")
         }
         try {
-
+               setMessage('Data sent to backend')
             const response=await api.get('/user/auth/login',{email,password})// sending data to backend in body
             if(response.data.success){
                 setMessage(response.data.message)
@@ -42,11 +43,11 @@ function LoginPage() {
 <h2>Login</h2>
 <form className='formData' onSubmit={handleClick}>
     <label htmlFor="email">Enter Email</label>
-    <input className='formInputs' required onChange={(e)=>setEmail(e.target.value)} type="email" />
+    <input style={{borderRadius:"5px"}} className='formInputs' required onChange={(e)=>setEmail(e.target.value)} type="email" />
     <label htmlFor="password">Enter password</label>
-    <input className='formInputs'  required onChange={(e)=>setPassword(e.target.value)} type="password" />
+    <input style={{borderRadius:"5px"}} className='formInputs'  required onChange={(e)=>setPassword(e.target.value)} type="password" />
     <label htmlFor="password">confirm password</label>
-    <input className='formInputs'  required onChange={(e)=>setConfirmPassword(e.target.value)} type="password" />
+    <input style={{borderRadius:"5px"}} className='formInputs'  required onChange={(e)=>setConfirmPassword(e.target.value)} type="password" />
     <button className='formButton' type='submit'>Submit</button>
     <h3 style={{color:"white"}}>{message}</h3>
 </form>

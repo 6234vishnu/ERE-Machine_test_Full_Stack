@@ -1,5 +1,5 @@
-frontend/.env
-backend/.env
+.env
+./backend/.env
 # Logs
 logs
 *.log

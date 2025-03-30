@@ -1,65 +1,95 @@
-import User from "../models/userSchema.js"
-import bcyrpt from 'bcrypt'
-import jwt from 'jsonwebtoken'
-const mongodbSecretKey = process.env.JWT_SECRET_KEY
+import User from "../models/userSchema.js";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+const mongodbSecretKey = process.env.JWT_SECRET_KEY;
 
 export const userLogin = async (req, res) => {
-    try {
-        const { email, password } = req.body // reciving from  body
-        if (!email && !password) {
-            return res.status(200).json({ success: false, message: " email and password is not found" })
-        }
-        const hashedPassword = bcyrpt.hash(password, 10)
-
-        const findUser = await User.findOne({ email: email, password: hashedPassword }) // finding the user
-        if (!findUser) {
-            return res.status(200).json({ success: false, message: "user  not found" })
-        }
-        const token =  jwt.sign({ userId: findUser._id }, mongodbSecretKey, {  //jwt integration
-            expiresIn: "2h"
-        })
-        return res.status(200).json({ success: true, message: "user login successfull", token })
-    } catch (error) {
-        console.log('error in userLogin', error);
-        return res.status(500).json({ success: false, message: "error in user login " })
-
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email and password are required" });
     }
-}
 
+    const findUser = await User.findOne({ email });
+    if (!findUser) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, findUser.password);
+    if (!isPasswordValid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid password" });
+    }
+
+    if (!mongodbSecretKey) {
+      return res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error: Missing JWT secret key",
+        });
+    }
+
+    const token = jwt.sign({ userId: findUser._id }, mongodbSecretKey, {
+      expiresIn: "2h",
+    });
+
+    return res
+      .status(200)
+      .json({ success: true, message: "User login successful", token });
+  } catch (error) {
+    console.log("Error in userLogin:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error in user login" });
+  }
+};
 
 export const userRegister = async (req, res) => {
-    try {
-        const { name, email, password } = req.body
-        if (!name || !email || !password) {
-            return res.status(200).json({ success: false, message: "user name and password and email is not found" })
-        }
-        const existingUser = await User.findOne({ email: email })
-        if (existingUser) {
-            return res.status(400).json({ success: false, message: "useris already exists" })
-        }
-        const hashedPassword = bcyrpt.hash(password, 10)
-        const createUser = new User({
-            email: email,
-            name: name,
-            password: hashedPassword,
-        })
-
-        const saveUser = await createUser.save()
-        if (!saveUser) {
-            return res.status(500).json({ success: false, message: "error occured while saving data" })
-        }
-
-        const token = await jwt.sign({ userId: findUser._id }, mongodbSecretKey, {  //jwt integration
-            expiresIn: "2h"
-        })
-        if (token) {
-            return res.status(500).json({ success: false, message: "error occured while saving data" })
-        }
-        return res.status(200).json({ success: true, message: "user signUp successfull", token })
-
-    } catch (error) {
-        console.log('error in userRegister', error);
-        return res.status(500).json({ success: false, message: "error in user signUp " })
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "All fields are required" });
     }
-}
 
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({ name, email, password: hashedPassword });
+    const saveUser = await newUser.save();
+
+    if (!mongodbSecretKey) {
+      return res
+        .status(500)
+        .json({
+          success: false,
+          message: "Server error: Missing JWT secret key",
+        });
+    }
+
+    const token = jwt.sign({ userId: saveUser._id }, mongodbSecretKey, {
+      expiresIn: "2h",
+    });
+
+    return res
+      .status(201)
+      .json({ success: true, message: "User registered successfully", token });
+  } catch (error) {
+    console.log("Error in userRegister:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error in user signUp" });
+  }
+};
