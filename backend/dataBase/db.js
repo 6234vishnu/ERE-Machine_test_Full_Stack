@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const url=process.env.MONGODB_URI
 const connectDb=async()=>{
    try {
-    const connect=await mongoose.connect('mongodb+srv://shafeeq:sneak@cluster0.sq01t.mongodb.net/userData',{
+    const connect=await mongoose.connect('mongodb://localhost:27017/ERE_interview',{
         useNewUrlParser:true,
         useUnifiedTopology:true,
     })
